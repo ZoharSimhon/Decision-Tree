@@ -204,25 +204,27 @@ def combine_subtrees(tree):
     else:
         return (tree, False)
 
+def run_algo(X, y, k, decision_algorithm):
+    # Run the decision method
+    error, tree = decision_algorithm(X, y, k-1)
+    success_rate = (1 - error) * 100
+    print(f"Brute-force success rate: {success_rate:.2f}%")
+    
+    # Plot the decision trees
+    plot_tree(tree, f"Brute-force Decision Tree (k={k})\n\n")
+     
 # Main execution
 if __name__ == "__main__":
     # Load data from file
     X, y = load_data('vectors.txt')
 
     # Set the maximum depth of the tree
-    k = 2  
+    k = 3  
 
     # Run optimized brute-force method
-    bf_error, bf_tree = optimized_brute_force_tree(X, y, k)
-    bf_success_rate = (1 - bf_error) * 100
-    print(f"Brute-force success rate: {bf_success_rate:.2f}%")
+    run_algo(X, y, k, optimized_brute_force_tree)
 
     # Run binary entropy method
-    be_error, be_tree = binary_entropy_tree(X, y, k)
-    be_success_rate = (1 - be_error) * 100
-    print(f"Binary entropy success rate: {be_success_rate:.2f}%")
-
-    # Plot the decision trees
-    plot_tree(bf_tree, f"Brute-force Decision Tree (k={k+1})\n\n")
-    plot_tree(be_tree, f"Binary Entropy Decision Tree (k={k+1})\n\n")
+    run_algo(X, y, k, binary_entropy_tree)
+    
    
