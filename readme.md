@@ -47,7 +47,7 @@ The dataset (`vectors.txt`) consists of binary vectors where each row represents
 
 The optimized brute force method consistently outperforms the binary entropy method in terms of classification accuracy, especially as the maximum depth `k` of the tree increases. However, it comes at the cost of increased computational time due to its exhaustive search approach.
 
-## Author
+## Authors
 
 Ron Ashwal <br>
 Zohar Simhon
