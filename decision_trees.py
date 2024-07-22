@@ -24,23 +24,38 @@ def calculate_error(y_true, y_pred):
     # Calculate the proportion of incorrect predictions
     return np.mean(y_true != y_pred)
 
-# Optimized Brute Force Decision Tree
-def optimized_brute_force_tree(X, y, k):
+# Brute Force Decision Tree
+def brute_force_tree(X, y, k):
     n_samples, n_features = X.shape
+    
+    # Helper function to calculate error for a given tree
+    def calculate_tree_error(tree, X, y):
+        predictions = np.array([predict(tree, sample) for sample in X])
+        return np.mean(predictions != y)
+    
+    # Prediction function for a given tree
+    def predict(tree, sample):
+        if isinstance(tree, (int, float)):
+            return tree
+        feature, left, right = tree
+        if sample[feature] == 0:
+            return predict(left, sample)
+        else:
+            return predict(right, sample)
     
     # Define a recursive function with caching to build the decision tree
     @lru_cache(maxsize=None)
     def build_tree(depth, sample_indices):
-        # Convert sample_indices to a frozenset for caching
         sample_indices = frozenset(sample_indices)
+        data = X[list(sample_indices)]
+        labels = y[list(sample_indices)]
         
         # Base case: if maximum depth is reached or all labels are the same, return the majority class
-        if depth == k or len(set(y[list(sample_indices)])) == 1:
-            majority_class = Counter(y[list(sample_indices)]).most_common(1)[0][0]
-            return majority_class, majority_class
+        if depth == k or len(set(labels)) == 1:
+            return int(np.mean(labels) >= 0.5)
         
-        best_error = float('inf')
         best_tree = None
+        min_error = float('inf')
         
         # Iterate over all features to find the best split
         for feature in range(n_features):
@@ -51,33 +66,28 @@ def optimized_brute_force_tree(X, y, k):
             if not left_indices or not right_indices:
                 continue
             
-            left_subtree, left_error = build_tree(depth + 1, left_indices)
-            right_subtree, right_error = build_tree(depth + 1, right_indices)
+            left_subtree = build_tree(depth + 1, left_indices)
+            right_subtree = build_tree(depth + 1, right_indices)
             
-            # Calculate the weighted error of the split
-            total_error = left_error * len(left_indices) / len(sample_indices) + \
-                          right_error * len(right_indices) / len(sample_indices)
+            tree = [feature, left_subtree, right_subtree]
+            error = calculate_tree_error(tree, data, labels)
             
             # Update the best split if the current one is better
-            if total_error < best_error:
-                best_error = total_error
-                best_tree = [feature, left_subtree, right_subtree]
+            if error < min_error:
+                min_error = error
+                best_tree = tree
             
             # Early stopping if a perfect split is found
-            if best_error == 0:
+            if min_error == 0:
                 break
         
-        # Combine subtrees if they are the same class
-        if isinstance(best_tree, list) and isinstance(best_tree[1], (int, float)) and isinstance(best_tree[2], (int, float)) and best_tree[1] == best_tree[2]:
-            return best_tree[1], best_error
-        
-        return best_tree, best_error
+        return best_tree if best_tree is not None else int(np.mean(labels) >= 0.5)
 
     initial_indices = frozenset(range(n_samples))
-    best_tree, best_error = build_tree(0, initial_indices)
+    best_tree = build_tree(0, initial_indices)
     
-    # Combine subtrees to simplify the tree
-    combine_subtrees(best_tree)
+    # Calculate the overall error of the tree
+    best_error = calculate_tree_error(best_tree, X, y)
     
     return best_error, best_tree
 
@@ -204,15 +214,15 @@ def combine_subtrees(tree):
     else:
         return (tree, False)
 
-def run_algo(X, y, k, decision_algorithm):
+def run_algo(X, y, k, decision_algorithm, algo_name):
     # Run the decision method
     error, tree = decision_algorithm(X, y, k-1)
     success_rate = (1 - error) * 100
-    print(f"Brute-force success rate: {success_rate:.2f}%")
+    print(f"{algo_name} success rate: {success_rate:.2f}%")
     
     # Plot the decision trees
-    plot_tree(tree, f"Brute-force Decision Tree (k={k})\n\n")
-     
+    plot_tree(tree, f"{algo_name} Decision Tree (k={k})\n\n")
+    
 # Main execution
 if __name__ == "__main__":
     # Load data from file
@@ -221,10 +231,8 @@ if __name__ == "__main__":
     # Set the maximum depth of the tree
     k = 3  
 
-    # Run optimized brute-force method
-    run_algo(X, y, k, optimized_brute_force_tree)
+    # Run brute-force method
+    run_algo(X, y, k, brute_force_tree, "Brute Force")
 
     # Run binary entropy method
-    run_algo(X, y, k, binary_entropy_tree)
-    
-   
+    run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
