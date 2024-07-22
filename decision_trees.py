@@ -233,29 +233,43 @@ def run_algo(X, y, k, decision_algorithm, algo_name):
     # Plot the decision trees
     plot_tree(tree, f"{algo_name} Decision Tree (k={k})\n\n")
     
-    return success_rate
+    return success_rate, elapsed_time
 
 def run_decision_tree_comparisons(X, y, ks):
     success_rates_brute = []
     success_rates_entropy = []
     
+    elapsed_times_brute = []
+    elapsed_times_entropy = []
+    
     for k in ks:
         print(f"\nRunning comparisons for k={k}...\n")
-        brute_force_success = run_algo(X, y, k, brute_force_tree, "Brute Force")
-        entropy_success = run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
+        brute_force_success, brute_force_time = run_algo(X, y, k, brute_force_tree, "Brute Force")
+        print(brute_force_success, brute_force_time)
+        entropy_success, entropy_time = run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
         
         success_rates_brute.append(brute_force_success)
         success_rates_entropy.append(entropy_success)
+        
+        elapsed_times_brute.append(brute_force_time)
+        elapsed_times_entropy.append(entropy_time)
     
-    plt.figure(figsize=(10, 6))
-    plt.plot(ks, success_rates_brute, label='Brute Force')
-    plt.plot(ks, success_rates_entropy, label='Binary Entropy')
-    plt.xlabel('Depth (k)')
-    plt.ylabel('Success Rate (%)')
-    plt.title('Decision Tree Success Rates by Depth')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    def plot_comparisons(brute_force_values, entropy_values, ylabel):
+        plt.figure(figsize=(10, 6))
+        plt.plot(ks, brute_force_values, label='Brute Force')
+        plt.plot(ks, entropy_values, label='Binary Entropy')
+        plt.xlabel('Depth (k)')
+        plt.ylabel(ylabel)
+        plt.title('Decision Tree Success Rates by Depth')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+    
+    # plot success rates
+    plot_comparisons(success_rates_brute, success_rates_entropy, 'Success Rate (%)') 
+    
+    # plot elapsed times
+    plot_comparisons(elapsed_times_brute, elapsed_times_entropy, 'Elapsed Time (s)') 
     
 # Main function to run the algorithms and visualize the results
 if __name__ == "__main__":
@@ -263,14 +277,8 @@ if __name__ == "__main__":
     X, y = load_data('vectors.txt')
 
     # Set the maximum depth of the tree
-    k = 3  
+    ks = [3] 
+    # ks = [2,3,4,5,6,7] 
 
     # run the algorithms
-    # run_decision_tree_comparisons(X, y, ks=[3])
-    run_decision_tree_comparisons(X, y, ks=[2,3,4])
-    
-    # # Run brute-force method
-    # run_algo(X, y, k, brute_force_tree, "Brute Force")
-
-    # # Run binary entropy method
-    # run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
+    run_decision_tree_comparisons(X, y, ks)
