@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 from functools import lru_cache
+import time  # Import the time module for performance measurement
 
 # Function to load data from file
 def load_data(filename):
@@ -215,15 +216,48 @@ def combine_subtrees(tree):
         return (tree, False)
 
 def run_algo(X, y, k, decision_algorithm, algo_name):
+    # Start the timer
+    start_time = time.time()
+    
     # Run the decision method
     error, tree = decision_algorithm(X, y, k-1)
+    
+    # Calculate the elapsed time
+    elapsed_time = time.time() - start_time
+    
+    
     success_rate = (1 - error) * 100
     print(f"{algo_name} success rate: {success_rate:.2f}%")
+    print(f"Execution time: {elapsed_time:.4f} seconds\n")
     
     # Plot the decision trees
     plot_tree(tree, f"{algo_name} Decision Tree (k={k})\n\n")
     
-# Main execution
+    return success_rate
+
+def run_decision_tree_comparisons(X, y, ks):
+    success_rates_brute = []
+    success_rates_entropy = []
+    
+    for k in ks:
+        print(f"\nRunning comparisons for k={k}...\n")
+        brute_force_success = run_algo(X, y, k, brute_force_tree, "Brute Force")
+        entropy_success = run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
+        
+        success_rates_brute.append(brute_force_success)
+        success_rates_entropy.append(entropy_success)
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(ks, success_rates_brute, label='Brute Force')
+    plt.plot(ks, success_rates_entropy, label='Binary Entropy')
+    plt.xlabel('Depth (k)')
+    plt.ylabel('Success Rate (%)')
+    plt.title('Decision Tree Success Rates by Depth')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
+# Main function to run the algorithms and visualize the results
 if __name__ == "__main__":
     # Load data from file
     X, y = load_data('vectors.txt')
@@ -231,8 +265,12 @@ if __name__ == "__main__":
     # Set the maximum depth of the tree
     k = 3  
 
-    # Run brute-force method
-    run_algo(X, y, k, brute_force_tree, "Brute Force")
+    # run the algorithms
+    # run_decision_tree_comparisons(X, y, ks=[3])
+    run_decision_tree_comparisons(X, y, ks=[2,3,4])
+    
+    # # Run brute-force method
+    # run_algo(X, y, k, brute_force_tree, "Brute Force")
 
-    # Run binary entropy method
-    run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
+    # # Run binary entropy method
+    # run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
