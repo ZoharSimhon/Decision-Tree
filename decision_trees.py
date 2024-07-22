@@ -87,6 +87,9 @@ def brute_force_tree(X, y, k):
     initial_indices = frozenset(range(n_samples))
     best_tree = build_tree(0, initial_indices)
     
+    # Combine subtrees to simplify the tree
+    combine_subtrees(best_tree)
+    
     # Calculate the overall error of the tree
     best_error = calculate_tree_error(best_tree, X, y)
     
@@ -164,7 +167,7 @@ def plot_tree(tree, title):
     def plot_node(ax, node, x, y, dx, dy):
         if isinstance(node, (int, float)):  # Leaf node
             color = 'lightcoral' if node == 0 else 'lightblue'
-            ax.text(x, y, f'Leaf: {node}', ha='center', va='center',
+            ax.text(x, y, f'Class: {node}', ha='center', va='center',
                     bbox=dict(boxstyle='round,pad=0.5', fc=color, ec='black'))
             
         elif isinstance(node, list) and len(node) == 3:  # Internal node
@@ -181,7 +184,7 @@ def plot_tree(tree, title):
                         arrowprops=dict(arrowstyle='<-'), ha='center', va='center')
             plot_node(ax, node[2], x+dx, y-dy, dx/2, dy)
             
-        else:
+        else:  # Leaf node
             color = 'lightcoral' if node == 0 else 'lightblue'
             ax.text(x, y, f'Class: {node}', ha='center', va='center',
                     bbox=dict(boxstyle='round,pad=0.5', fc=color, ec='black'))
@@ -265,11 +268,12 @@ def run_decision_tree_comparisons(X, y, ks):
         plt.grid(True)
         plt.show()
     
-    # plot success rates
-    plot_comparisons(success_rates_brute, success_rates_entropy, 'Success Rate (%)') 
-    
-    # plot elapsed times
-    plot_comparisons(elapsed_times_brute, elapsed_times_entropy, 'Elapsed Time (s)') 
+    if(len(ks) > 1):
+        # plot success rates
+        plot_comparisons(success_rates_brute, success_rates_entropy, 'Success Rate (%)') 
+        
+        # plot elapsed times
+        plot_comparisons(elapsed_times_brute, elapsed_times_entropy, 'Elapsed Time (s)') 
     
 # Main function to run the algorithms and visualize the results
 if __name__ == "__main__":
