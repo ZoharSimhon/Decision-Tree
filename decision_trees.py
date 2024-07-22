@@ -260,7 +260,7 @@ def run_decision_tree_comparisons(X, y, ks):
         plt.plot(ks, entropy_values, label='Binary Entropy')
         plt.xlabel('Depth (k)')
         plt.ylabel(ylabel)
-        plt.title('Decision Tree Success Rates by Depth')
+        plt.title(f'Decision Tree {ylabel[:-4]} by Depth')
         plt.legend()
         plt.grid(True)
         plt.show()
