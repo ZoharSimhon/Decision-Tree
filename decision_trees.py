@@ -248,7 +248,6 @@ def run_decision_tree_comparisons(X, y, ks):
     for k in ks:
         print(f"\nRunning comparisons for k={k}...\n")
         brute_force_success, brute_force_time = run_algo(X, y, k, brute_force_tree, "Brute Force")
-        print(brute_force_success, brute_force_time)
         entropy_success, entropy_time = run_algo(X, y, k, binary_entropy_tree, "Binary Entropy")
         
         success_rates_brute.append(brute_force_success)
